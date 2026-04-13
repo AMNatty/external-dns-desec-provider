@@ -1,0 +1,32 @@
+steps:
+  - name: publish-image-latest
+    image: docker.io/woodpeckerci/plugin-kaniko
+    settings:
+      registry: harbor.astolfo.cool
+      repo: infra/external-dns-desec-provider
+      tags: ${CI_COMMIT_SHA},latest
+      dockerfile: Dockerfile
+      build_args:
+        - EXTRA_OPTS=--use-new-run --snapshot-mode=redo --no-push-cache
+      username:
+        from_secret: infra_ci_username
+      password:
+        from_secret: infra_ci_password
+    backend_options:
+      kubernetes:
+        resources:
+          requests:
+            memory: 4000Mi
+            cpu: 6000m
+          limits:
+            memory: 6000Mi
+            cpu: 12000m
+matrix:
+  platform:
+    - linux/amd64
+    - linux/arm64
+
+when:
+  - event: manual
+  - event: push
+    branch: main
